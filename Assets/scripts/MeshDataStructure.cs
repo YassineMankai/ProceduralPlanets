@@ -2,126 +2,124 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-namespace UnityEngine
+
+public struct Vector4Int
 {
-    public struct Vector4Int
+    private int m_X;
+    private int m_Y;
+    private int m_Z;
+    private int m_W;
+
+
+    public int x { get { return m_X; } set { m_X = value; } }
+    public int y { get { return m_Y; } set { m_Y = value; } }
+    public int z { get { return m_Z; } set { m_Z = value; } }
+    public int w { get { return m_W; } set { m_W = value; } }
+
+
+
+    public Vector4Int(int _x, int _y, int _z, int _w)
     {
-        private int m_X;
-        private int m_Y;
-        private int m_Z;
-        private int m_W;
+        m_X = _x;
+        m_Y = _y;
+        m_Z = _z;
+        m_W = _w;
+    }
 
-
-        public int x { get { return m_X; } set { m_X = value; } }
-        public int y { get { return m_Y; } set { m_Y = value; } }
-        public int z { get { return m_Z; } set { m_Z = value; } }
-        public int w { get { return m_W; } set { m_W = value; } }
-
-
-
-        public Vector4Int(int _x, int _y, int _z, int _w)
+    public int this[int index]
+    {
+        get
         {
-            m_X = _x;
-            m_Y = _y;
-            m_Z = _z;
-            m_W = _w;
-        }
-
-        public int this[int index]
-        {
-            get
+            switch (index)
             {
-                switch (index)
-                {
-                    case 0: return x;
-                    case 1: return y;
-                    case 2: return z;
-                    case 3: return w;
-                    default:
-                        throw new IndexOutOfRangeException($"Invalid Vector4Int index addressed: {index}!");
-                }
-            }
-
-            set
-            {
-                switch (index)
-                {
-                    case 0: x = value; break;
-                    case 1: y = value; break;
-                    case 2: z = value; break;
-                    case 3: w = value; break;
-
-                    default:
-                        throw new IndexOutOfRangeException($"Invalid Vector4Int index addressed: {index}!");
-                }
+                case 0: return x;
+                case 1: return y;
+                case 2: return z;
+                case 3: return w;
+                default:
+                    throw new IndexOutOfRangeException($"Invalid Vector4Int index addressed: {index}!");
             }
         }
 
-        public static Vector4Int operator +(Vector4Int a, Vector4Int b)
+        set
         {
-            return new Vector4Int(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+            switch (index)
+            {
+                case 0: x = value; break;
+                case 1: y = value; break;
+                case 2: z = value; break;
+                case 3: w = value; break;
+
+                default:
+                    throw new IndexOutOfRangeException($"Invalid Vector4Int index addressed: {index}!");
+            }
         }
+    }
 
-        public static Vector4Int operator -(Vector4Int a, Vector4Int b)
-        {
-            return new Vector4Int(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
-        }
+    public static Vector4Int operator +(Vector4Int a, Vector4Int b)
+    {
+        return new Vector4Int(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    }
 
-        public static Vector4Int operator -(Vector4Int a)
-        {
-            return new Vector4Int(-a.x, -a.y, -a.z, -a.w);
-        }
+    public static Vector4Int operator -(Vector4Int a, Vector4Int b)
+    {
+        return new Vector4Int(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+    }
 
-        public static bool operator ==(Vector4Int lhs, Vector4Int rhs)
-        {
-            return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z && lhs.w == rhs.w;
-        }
+    public static Vector4Int operator -(Vector4Int a)
+    {
+        return new Vector4Int(-a.x, -a.y, -a.z, -a.w);
+    }
 
-        public static bool operator !=(Vector4Int lhs, Vector4Int rhs)
-        {
-            return !(lhs == rhs);
-        }
+    public static bool operator ==(Vector4Int lhs, Vector4Int rhs)
+    {
+        return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z && lhs.w == rhs.w;
+    }
 
-        public override bool Equals(object other)
-        {
-            if (!(other is Vector4Int)) return false;
+    public static bool operator !=(Vector4Int lhs, Vector4Int rhs)
+    {
+        return !(lhs == rhs);
+    }
 
-            return Equals((Vector4Int)other);
-        }
+    public override bool Equals(object other)
+    {
+        if (!(other is Vector4Int)) return false;
 
-        public bool Equals(Vector4Int other)
-        {
-            return this == other;
-        }
+        return Equals((Vector4Int)other);
+    }
 
-        public override int GetHashCode()
-        {
-            var yHash = y.GetHashCode();
-            var zHash = z.GetHashCode();
-            var wHash = w.GetHashCode();
-            return x.GetHashCode() ^ (yHash << 4) ^ (yHash >> 28) ^ (zHash >> 4) ^ (zHash << 28) ^ (wHash >> 4) ^ (wHash << 28);
-        }
+    public bool Equals(Vector4Int other)
+    {
+        return this == other;
+    }
 
-        public override string ToString()
-        {
-            return $"{x} {y} {z} {w}";
-        }
+    public override int GetHashCode()
+    {
+        var yHash = y.GetHashCode();
+        var zHash = z.GetHashCode();
+        var wHash = w.GetHashCode();
+        return x.GetHashCode() ^ (yHash << 4) ^ (yHash >> 28) ^ (zHash >> 4) ^ (zHash << 28) ^ (wHash >> 4) ^ (wHash << 28);
+    }
 
+    public override string ToString()
+    {
+        return $"{x} {y} {z} {w}";
     }
 
 }
+
+
 public class MeshDataStructure
 {
-    public SimpleNoiseFilter noiseFilter;
-
     private List<Vector3> verticesDS;
     private List<Vector4Int> quadsDS;
     private List<HashSet<int>> vertexToFaces;
     private List<HashSet<Vector2Int>> vertexToEdge;
-
+    public MinMax elevationMinMax;
+    private Vector2[] uv;
     public MeshDataStructure(Vector3[] initialVertices, int[] initialQuads)
     {
-        noiseFilter = new SimpleNoiseFilter();
+        elevationMinMax = new MinMax();
         verticesDS = new List<Vector3>();
         quadsDS = new List<Vector4Int>();
         vertexToFaces = new List<HashSet<int>>();
@@ -167,7 +165,7 @@ public class MeshDataStructure
             vertexToEdge.Add(new HashSet<Vector2Int>());
         }
 
-        for (int i = 0; i < quadsDS.Count; i ++)
+        for (int i = 0; i < quadsDS.Count; i++)
         {
             Vector4Int face = quadsDS[i];
 
@@ -240,6 +238,7 @@ public class MeshDataStructure
             {
                 avgFacePoints += verticesDS[faceToFacePoint[face]];
             }
+
             avgFacePoints /= nbFaces;
 
             Vector3 avgEdgeMidpoints = Vector3.zero;
@@ -251,6 +250,7 @@ public class MeshDataStructure
                 avgEdgeMidpoints += midPoint / 2;
             }
             avgEdgeMidpoints /= nbFaces;
+
             verticesDS[vOriginal] = avgFacePoints + 2 * avgEdgeMidpoints + (nbFaces - 3) * verticesDS[vOriginal];
             verticesDS[vOriginal] /= nbFaces;
         }
@@ -258,13 +258,14 @@ public class MeshDataStructure
 
         // connect
         List<Vector4Int> newquadsDS = new List<Vector4Int>();
+
         for (int faceindex = 0; faceindex < quadsDS.Count; faceindex++)
         {
             Vector4Int quad = quadsDS[faceindex];
+
             int facePoint = faceToFacePoint[faceindex];
 
             int edgePoint1 = edgeToEdgePoint[quad.x, quad.y];
-
             int edgePoint2 = edgeToEdgePoint[quad.y, quad.z];
             int edgePoint3 = edgeToEdgePoint[quad.z, quad.w];
             int edgePoint4 = edgeToEdgePoint[quad.w, quad.x];
@@ -304,25 +305,29 @@ public class MeshDataStructure
             index += 6;
         }
 
-
         return triangles;
     }
-    public Vector3[] getVertices(float radius, NoiseLayer[] noiseLayers)
+    public Vector3[] getVertices(float radius, NoiseLayer[] noiseLayers, BiomeColorSettings biomeColorSettings)
     {
+        elevationMinMax.reset();
+
         Vector3[] vertices = new Vector3[verticesDS.Count];
+        if (uv == null || uv.Length != verticesDS.Count)
+            uv = new Vector2[verticesDS.Count];
+
         for (int i = 0; i < verticesDS.Count; i++)
         {
-            Vector3 PointOnUnitSphere = verticesDS[i].normalized;
-
             float firstLayerValue = 0;
-            float elevation = 0;
+            float unscaled_elevation = 0;
+
+            Vector3 pointOnUnitSphere = verticesDS[i].normalized;
 
             if (noiseLayers.Length > 0)
             {
-                firstLayerValue = noiseFilter.Evaluate(PointOnUnitSphere, noiseLayers[0]);
+                firstLayerValue = NoiseFilterFactory.createNoiseFilter(noiseLayers[0]).Evaluate(pointOnUnitSphere, noiseLayers[0]);
                 if (noiseLayers[0].enabled)
                 {
-                    elevation += firstLayerValue;
+                    unscaled_elevation += firstLayerValue;
                 }
             }
 
@@ -330,14 +335,28 @@ public class MeshDataStructure
             {
                 NoiseLayer noiseLayer = noiseLayers[layerIndex];
                 if (noiseLayer.enabled)
-                {
-                    float mask = noiseLayer.useFirstLayerAsMask ? firstLayerValue : 1;
-                    elevation += noiseFilter.Evaluate(PointOnUnitSphere, noiseLayer) * mask;
+                {           
+                    float layerElevation = NoiseFilterFactory.createNoiseFilter(noiseLayer).Evaluate(pointOnUnitSphere, noiseLayer);
+                    float mask = noiseLayer.useFirstLayerAsMask ? ((Mathf.Sign(layerElevation) == Mathf.Sign(firstLayerValue))?Mathf.Abs(firstLayerValue): 0) : 1;
+                    unscaled_elevation += layerElevation * mask;
                 }
             }
 
-            vertices[i] = PointOnUnitSphere * radius * (1+elevation);
+            elevationMinMax.AddValue(unscaled_elevation);
+
+            uv[i] = new Vector2(biomeColorSettings.BiomePercentFromPoint(pointOnUnitSphere), unscaled_elevation);
+
+            float scaled_elevation = Mathf.Max(0, unscaled_elevation);
+            scaled_elevation = radius * (1 + scaled_elevation);
+            
+            vertices[i] = pointOnUnitSphere * scaled_elevation;
         }
+
         return vertices;
+    }
+
+    public Vector2[] getUVs()
+    {   
+        return uv;
     }
 }

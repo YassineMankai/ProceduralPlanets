@@ -5,6 +5,9 @@ using UnityEngine;
 [System.Serializable]
 public struct NoiseLayer
 {
+    public enum FilterType { Simple, Rigid };
+    public FilterType filterType;
+    
     [Header("noise Settings")]
     [Range(0.0f, 10.0f)]
     public float roghness;
@@ -29,24 +32,28 @@ public class Planet : MonoBehaviour
     [SerializeField, HideInInspector]
     MeshFilter meshFilter;
 
-    [SerializeField]
-    private Material customMaterial;
-    
-    [SerializeField, Range(1.0f, 10.0f)]
+    [SerializeField, Range(1.0f, 100.0f)]
     private float radius = 1;
 
     private MeshDataStructure meshDS;
 
-    public bool subdivide;
+    //public bool subdivide;
     public bool changingValues;
 
     public NoiseLayer[] noiseLayers;
 
+    [Header("Color Settings")]
+    [SerializeField]
+    private Material planetMaterial;
+    public BiomeColorSettings biomeColorSettings;
+    public Gradient oceanColor;
+    private Texture2D texture;
+    private const int textureResolution = 50;
 
     // Start is called before the first frame update
 
     private void Start()
-    {
+    {  
         Initialize();
         radius = 1;
         Vector3[] initialVertices = {
@@ -72,25 +79,19 @@ public class Planet : MonoBehaviour
 
         meshDS = new MeshDataStructure(initialVertices, initialQuads);
 
-        Vector3[] vertices = meshDS.getVertices(radius, noiseLayers);
-        int[] triangles = meshDS.getTriangles();
+        meshDS.subdivide(5);
 
+        Vector3[] vertices = meshDS.getVertices(radius, noiseLayers, biomeColorSettings);
+        int[] triangles = meshDS.getTriangles();
+        Vector2[] uv = meshDS.getUVs();
+
+        UpdateShader();
         Mesh mesh = meshFilter.sharedMesh;
         mesh.Clear();
         mesh.vertices = vertices;
         mesh.triangles = triangles;
         mesh.RecalculateNormals();
-    }
-
-
-    private void Update()
-    {
-        if (subdivide)
-        {
-            meshDS.subdivide(6);
-            GenerateMesh();
-            subdivide = false;
-        }
+        mesh.uv = uv;
     }
 
     private void OnValidate()
@@ -101,6 +102,8 @@ public class Planet : MonoBehaviour
 
     void Initialize()
     {
+        texture = new Texture2D(textureResolution * 2, biomeColorSettings.biomes.Length, TextureFormat.RGBA32, false);
+
         if (meshFilter == null)
         {
             GameObject meshObj = new GameObject("mesh");
@@ -108,7 +111,7 @@ public class Planet : MonoBehaviour
             meshObj.transform.localPosition = Vector3.zero;
             meshObj.transform.localRotation = Quaternion.identity;
 
-            meshObj.AddComponent<MeshRenderer>().sharedMaterial = customMaterial;
+            meshObj.AddComponent<MeshRenderer>().sharedMaterial = planetMaterial;
             meshFilter = meshObj.AddComponent<MeshFilter>();
             meshFilter.sharedMesh = new Mesh();
         }
@@ -117,14 +120,52 @@ public class Planet : MonoBehaviour
 
     void GenerateMesh()
     {
-        Vector3[] vertices = meshDS.getVertices(radius, noiseLayers);
+        Vector3[] vertices = meshDS.getVertices(radius, noiseLayers, biomeColorSettings);
         int[] triangles = meshDS.getTriangles();
+        Vector2[] uv = meshDS.getUVs();
+        
+        UpdateShader();
 
         Mesh mesh = meshFilter.sharedMesh;
         mesh.Clear();
         mesh.vertices = vertices;
         mesh.triangles = triangles;
         mesh.RecalculateNormals();
+        mesh.uv = uv;
 
+    }
+
+    void UpdateShader()
+    {
+        planetMaterial.SetVector("_elevationMinMax", new Vector4(meshDS.elevationMinMax.Min, meshDS.elevationMinMax.Max));
+        if (texture == null || (texture.height != biomeColorSettings.biomes.Length))
+            texture = new Texture2D(textureResolution * 2, biomeColorSettings.biomes.Length, TextureFormat.RGBA32, false);
+
+        Color[] colors = new Color[texture.width * texture.height];
+        int colorIndex = 0;
+        
+        foreach (var biome in biomeColorSettings.biomes)
+        {
+            for (int i = 0; i < textureResolution * 2; i++)
+            {
+                Color gradientColor;
+                if (i < textureResolution)
+                {
+                    gradientColor = oceanColor.Evaluate(i / (textureResolution - 1f));
+
+                }
+                else
+                {
+                    gradientColor = biome.gradient.Evaluate((i - textureResolution) / (textureResolution - 1f));
+                }
+                Color tintColor = biome.tint;
+                colors[colorIndex] = gradientColor * (1 - biome.tintPercent) + tintColor * biome.tintPercent;
+                colorIndex++;
+            }
+        }
+       
+        texture.SetPixels(colors);
+        texture.Apply();
+        planetMaterial.SetTexture("_gradient", texture);
     }
 }
