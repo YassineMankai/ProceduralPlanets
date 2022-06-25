@@ -49,6 +49,7 @@ public class Planet : MonoBehaviour
     public Gradient oceanColor;
     private Texture2D texture;
     private const int textureResolution = 50;
+    private float rotationAngle = 0;
 
     // Start is called before the first frame update
 
@@ -82,16 +83,21 @@ public class Planet : MonoBehaviour
         meshDS.subdivide(5);
 
         Vector3[] vertices = meshDS.getVertices(radius, noiseLayers, biomeColorSettings);
-        int[] triangles = meshDS.getTriangles();
         Vector2[] uv = meshDS.getUVs();
 
         UpdateShader();
         Mesh mesh = meshFilter.sharedMesh;
         mesh.Clear();
         mesh.vertices = vertices;
-        mesh.triangles = triangles;
+        mesh.triangles = meshDS.triangles;
         mesh.RecalculateNormals();
         mesh.uv = uv;
+    }
+
+    private void Update()
+    {
+        rotationAngle = 0.05f * 180 * Time.deltaTime;
+        transform.RotateAround(transform.position, Vector3.up + Vector3.right, rotationAngle);
     }
 
     private void OnValidate()
@@ -121,7 +127,6 @@ public class Planet : MonoBehaviour
     void GenerateMesh()
     {
         Vector3[] vertices = meshDS.getVertices(radius, noiseLayers, biomeColorSettings);
-        int[] triangles = meshDS.getTriangles();
         Vector2[] uv = meshDS.getUVs();
         
         UpdateShader();
@@ -129,7 +134,7 @@ public class Planet : MonoBehaviour
         Mesh mesh = meshFilter.sharedMesh;
         mesh.Clear();
         mesh.vertices = vertices;
-        mesh.triangles = triangles;
+        mesh.triangles = meshDS.triangles;
         mesh.RecalculateNormals();
         mesh.uv = uv;
 

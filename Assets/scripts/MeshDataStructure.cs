@@ -113,8 +113,9 @@ public class MeshDataStructure
 {
     private List<Vector3> verticesDS;
     private List<Vector4Int> quadsDS;
+    public int[] triangles;
     private List<HashSet<int>> vertexToFaces;
-    private List<HashSet<Vector2Int>> vertexToEdge;
+    private List<HashSet<Vector2Int>> vertexToEdges;
     public MinMax elevationMinMax;
     private Vector2[] uv;
     public MeshDataStructure(Vector3[] initialVertices, int[] initialQuads)
@@ -123,13 +124,13 @@ public class MeshDataStructure
         verticesDS = new List<Vector3>();
         quadsDS = new List<Vector4Int>();
         vertexToFaces = new List<HashSet<int>>();
-        vertexToEdge = new List<HashSet<Vector2Int>>();
+        vertexToEdges = new List<HashSet<Vector2Int>>();
 
         for (int i = 0; i < initialVertices.Length; i++)
         {
             verticesDS.Add(initialVertices[i]);
             vertexToFaces.Add(new HashSet<int>());
-            vertexToEdge.Add(new HashSet<Vector2Int>());
+            vertexToEdges.Add(new HashSet<Vector2Int>());
         }
 
         for (int i = 0; i < initialQuads.Length; i += 4)
@@ -143,26 +144,27 @@ public class MeshDataStructure
                 Vector2Int edgeD = new Vector2Int(face[v], face[(v + 1) % 4]);
                 Vector2Int edgeI = new Vector2Int(face[(v + 1) % 4], face[v]);
 
-                vertexToEdge[face[v]].Add(edgeD);
-                vertexToEdge[face[v]].Add(edgeI);
+                vertexToEdges[face[v]].Add(edgeD);
+                vertexToEdges[face[v]].Add(edgeI);
 
-                vertexToEdge[face[(v + 1) % 4]].Add(edgeD);
-                vertexToEdge[face[(v + 1) % 4]].Add(edgeI);
+                vertexToEdges[face[(v + 1) % 4]].Add(edgeD);
+                vertexToEdges[face[(v + 1) % 4]].Add(edgeI);
 
             }
             quadsDS.Add(face);
         }
+        setTriangles();
     }
 
     public void updtateCurrentMaps()
     {
         vertexToFaces = new List<HashSet<int>>();
-        vertexToEdge = new List<HashSet<Vector2Int>>();
+        vertexToEdges = new List<HashSet<Vector2Int>>();
 
         for (int i = 0; i < verticesDS.Count; i++)
         {
             vertexToFaces.Add(new HashSet<int>());
-            vertexToEdge.Add(new HashSet<Vector2Int>());
+            vertexToEdges.Add(new HashSet<Vector2Int>());
         }
 
         for (int i = 0; i < quadsDS.Count; i++)
@@ -176,11 +178,11 @@ public class MeshDataStructure
                 Vector2Int edgeD = new Vector2Int(face[v], face[(v + 1) % 4]);
                 Vector2Int edgeI = new Vector2Int(face[(v + 1) % 4], face[v]);
 
-                vertexToEdge[face[v]].Add(edgeD);
-                vertexToEdge[face[v]].Add(edgeI);
+                vertexToEdges[face[v]].Add(edgeD);
+                vertexToEdges[face[v]].Add(edgeI);
 
-                vertexToEdge[face[(v + 1) % 4]].Add(edgeD);
-                vertexToEdge[face[(v + 1) % 4]].Add(edgeI);
+                vertexToEdges[face[(v + 1) % 4]].Add(edgeD);
+                vertexToEdges[face[(v + 1) % 4]].Add(edgeI);
             }
         }
     }
@@ -188,7 +190,6 @@ public class MeshDataStructure
     public void subdivide()
     {
         updtateCurrentMaps();
-
 
         int nbOriginal = verticesDS.Count;
         int[,] edgeToEdgePoint = new int[verticesDS.Count, verticesDS.Count];
@@ -205,7 +206,7 @@ public class MeshDataStructure
 
             verticesDS.Add(avg);
             vertexToFaces.Add(new HashSet<int>());
-            vertexToEdge.Add(new HashSet<Vector2Int>());
+            vertexToEdges.Add(new HashSet<Vector2Int>());
 
             // update edgePoint
             for (int v = 0; v < 4; v++)
@@ -217,7 +218,7 @@ public class MeshDataStructure
                     edgeToEdgePoint[edge.y, edge.x] = verticesDS.Count;
                     verticesDS.Add(avg);
                     vertexToFaces.Add(new HashSet<int>());
-                    vertexToEdge.Add(new HashSet<Vector2Int>());
+                    vertexToEdges.Add(new HashSet<Vector2Int>());
                 }
                 else
                 {
@@ -243,7 +244,7 @@ public class MeshDataStructure
 
             Vector3 avgEdgeMidpoints = Vector3.zero;
 
-            foreach (Vector2Int edge in vertexToEdge[vOriginal])
+            foreach (Vector2Int edge in vertexToEdges[vOriginal])
             {
                 Vector3 midPoint = (verticesDS[edge.x] + verticesDS[edge.y]) / 2;
                 // take into consideration duplicates
@@ -286,11 +287,12 @@ public class MeshDataStructure
             level--;
             subdivide();
         }
+        setTriangles();
     }
 
-    public int[] getTriangles()
+    public int[] setTriangles()
     {
-        int[] triangles = new int[quadsDS.Count * 2 * 3];
+        triangles = new int[quadsDS.Count * 2 * 3];
         int index = 0;
         foreach (Vector4Int quad in quadsDS)
         {
@@ -354,7 +356,6 @@ public class MeshDataStructure
 
         return vertices;
     }
-
     public Vector2[] getUVs()
     {   
         return uv;
